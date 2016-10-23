@@ -682,7 +682,30 @@ void GBGetGameCode(const struct GB* gb, char* out) {
 	}
 }
 
+void testpatch(struct GB* gb, uint16_t addr, uint8_t val, uint16_t bank)
+{
+	printf("old: 0x%.2x\n", GBView8(gb->cpu, addr, bank));
+
+	GBPatch8(gb->cpu, addr, val, NULL, bank);
+
+	printf("new: 0x%.2x\n\n", GBView8(gb->cpu, addr, bank));
+}
+
 void GBFrameEnded(struct GB* gb) {
+	//tested on pokered
+
+	// patch works here! :D
+	//old: 0x26c2
+	//new: 0xa7c9
+	testpatch(gb, 0x516e, 0xa7, 0x01);
+	testpatch(gb, 0x516f, 0x69, 0x01);
+
+	//patch doesn't work here :(
+	//old: 0xfa36
+	//new: 0xfa36
+	testpatch(gb, 0x0bd1, 0xa7, 0x00);
+	testpatch(gb, 0x0bd2, 0x69, 0x00);
+
 	GBSramClean(gb, gb->video.frameCounter);
 
 	if (gb->cpu->components && gb->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
